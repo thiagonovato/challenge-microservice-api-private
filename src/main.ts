@@ -9,7 +9,17 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(ApplicationModule);
   const { httpAdapter } = app.get(HttpAdapterHost);
 
-  app.enableCors();
+  const allowedOrigins = ['http://localhost:3001'];
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin not allowed by CORS'));
+      }
+    }
+  });
   app.useGlobalPipes(new ValidationPipe({ disableErrorMessages: false, forbidUnknownValues: true }));
   app.useGlobalFilters(new BaseExceptionFilter(httpAdapter));
 
